@@ -70,16 +70,21 @@ export class FormController {
                     this.SchemaGenerator.generateDefaultSchema(data) :
                     schema;
 
-                let u: IUISchemaElement = uischema === undefined ?
-                    this.UISchemaRegistry.getBestUiSchema(s, data) :
-                    uischema;
-
                 let unresolvedRefs = JsonRefs.findRefs(s);
                 if (_.size(unresolvedRefs) === 0) {
+                        
+                    let u: IUISchemaElement = uischema === undefined ?
+                        this.UISchemaRegistry.getBestUiSchema(s, data) :
+                        uischema;
+
                     this.render(s, data, u);
                 } else {
                     JsonRefs.resolveRefs(s).then(
                         res => {
+                            let u: IUISchemaElement = uischema === undefined ?
+                                this.UISchemaRegistry.getBestUiSchema(res.resolved, data) :
+                                uischema;
+
                             this.render(res.resolved, data, u);
                             // needed for remote cases
                             this.scope.$digest();
