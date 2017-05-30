@@ -12,7 +12,7 @@ export class RefResolver  {
     }
 
     resolveInstance(instance: any, schemaPath: string): any {
-        return this.innerResolveInstance(instance, schemaPath, false);
+        return this.innerResolveInstance(instance, schemaPath, false, false);
     };
 
     /**
@@ -25,14 +25,21 @@ export class RefResolver  {
         try {
             let fragments = PathUtil.toPropertyFragments(path);
             return fragments.reduce(function (subSchema, fragment) {
-                if (fragment === '#') {
+                const [frag, index] = PathResolver.innerResolveSchemaFragment(fragment);
+                if (index && subSchema.type !== 'array') {
+                    throw new Error('Can\'t use index reference for non array schema type.');
+                }
+
+                if (frag === '#' && !index) {
                     return subSchema;
+                } else if (index !== null && subSchema[frag].type === 'array') {
+                    return subSchema[frag].items;
                 } else if (subSchema instanceof Array) {
                     return subSchema.map(function (item) {
-                        return item[fragment];
+                        return item[frag];
                     });
                 }
-                return subSchema[fragment];
+                return subSchema[frag];
             }, schema);
         } catch (err) {
             return undefined;
@@ -41,30 +48,70 @@ export class RefResolver  {
 
     lastFragment(schemaPath: string): string {
         let fragments: string[] = PathUtil.normalizeFragments(schemaPath);
-        return fragments[fragments.length - 1];
+        if (fragments.length === 0) return undefined;
+
+        const [frag, index] = PathResolver.innerResolveSchemaFragment(
+                fragments[fragments.length - 1]);
+        return index !== null ? index : frag;
     }
 
-     resolveToLastModel(instance: any, schemaPath: string): any {
+    resolveToLastModel(instance: any, schemaPath: string): any {
         let fragments: string[] = PathUtil.normalizeFragments(schemaPath);
-        let fragmentsToObject: string[] = fragments.slice(0, fragments.length - 1);
-        return this.innerResolveInstance(instance, fragmentsToObject.join('/'), true);
+        const isSingleIndexedRef =
+                fragments.length === 1 && /\[\d+\]/.test(fragments[0]);
+        let fragmentsToObject: string[] = isSingleIndexedRef ?
+                fragments : fragments.slice(0, fragments.length - 1);
+
+        return this.innerResolveInstance(instance, fragmentsToObject.join('/'),
+                                         true, isSingleIndexedRef);
+    }
+
+    /**
+     * @param fragment the schema path fragment to check for indexing
+     * @returns [string, integer]
+     */
+    private innerResolveSchemaFragment(fragment: string) {
+        const indexTest = fragment.match(/(.+)\[(\d+)\]$/);
+        let index = null;
+        if (indexTest) {
+            fragment = indexTest[1];
+            index = parseInt(indexTest[2], 10);
+        }
+        return [fragment, index];
     }
 
     private innerResolveInstance(instance: any, schemaPath: string,
-                                        createMissing: boolean): any {
+                                        createMissing: boolean, isSingleIndexedRef: boolean): any {
         let fragments = PathUtil.toPropertyFragments(this.toInstancePath(schemaPath));
-        return fragments.reduce((currObj, fragment) => {
-            if (currObj === undefined) {
+        let [obj, index] = fragments.reduce((currObj, fragment, idx) => {
+            let [obj, lastIndex] = currObj;
+            const [frag, index] = PathResolver.innerResolveSchemaFragment(fragment);
+
+            if (obj === undefined) {
                 return undefined;
             }
-            if (currObj instanceof Array) {
-                return currObj.map(item => item[fragment]);
+            if (obj instanceof Array) {
+                return [obj.map(item => item[frag]), null];
             }
-            if (!currObj.hasOwnProperty(fragment) && createMissing) {
-                currObj[fragment] = {};
+
+            if (lastIndex) {
+                obj[lastIndex] = {};
+                obj = obj[lastIndex];
             }
-            return currObj[fragment];
-        }, instance);
+
+            if (!obj.hasOwnProperty(frag) && createMissing) {
+                if (index !== null) {
+                    obj[frag] = [];
+                    if (!isSingleIndexedRef) obj[frag][index] = {};
+                } else {
+                    obj[frag] = {};
+                }
+            }
+
+            return [obj[frag], index];
+        }, [instance, null]);
+
+        return (!isSingleIndexedRef && index !== null) ? obj[index] : obj;
     };
 }
 export const PathResolver = new RefResolver();
