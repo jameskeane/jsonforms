@@ -4,7 +4,7 @@ import {PathUtil} from './pathutil';
 
 // TODO: replace
 let Ajv = require('ajv');
-let ajv = new Ajv({allErrors: true, jsonPointers: true});
+let ajv = new Ajv({allErrors: true, jsonPointers: true, addUsedSchema: false});
 // TODO: remove
 class HashTable {
 
