@@ -19,6 +19,13 @@ export class HorizontalController  extends AbstractLayout {
         super(scope);
         this.updateChildrenLabel(this.uiSchema.elements);
     }
+
+    getChildStyle(child: IUISchemaElement): any {
+        if (child.options && child.options.shrink) {
+            return { 'flex': '0 1 auto' };
+        }
+    }
+
     private updateChildrenLabel(elements: IUISchemaElement[]): void {
         let labelExists = elements.reduce((atLeastOneLabel, element) => {
             return atLeastOneLabel ||  LabelObjectUtil.shouldShowLabel(element);
@@ -37,7 +44,8 @@ export class HorizontalController  extends AbstractLayout {
 const horizontalTemplate = `<jsonforms-layout>
     <div class="jsf-horizontal-layout">
          <div class="jsf-horizontal-layout-container">
-              <div ng-repeat="child in vm.uiSchema.elements">
+              <div ng-repeat="child in vm.uiSchema.elements"
+                   ng-style="vm.getChildStyle(child)">
                    <jsonforms-inner uischema="child"></jsonforms-inner>
               </div>
          </div>

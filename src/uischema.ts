@@ -32,6 +32,7 @@ export interface ILabelObject {
 
 export interface IUISchemaElement extends IWithLabel {
     type: string;
+    options?: any;
     rule?: IRule;
 }
 
