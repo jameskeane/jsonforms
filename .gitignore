@@ -4,6 +4,7 @@ dist/
 temp/
 coverage/
 reports/
+typings/
 
 # build results
 /components/
@@ -11,12 +12,26 @@ index.d.ts
 jsonforms.js
 jsonschema.d.ts
 uischema.d.ts
+*.woff2
+*.woff
+*.svg
+*.ttf
+*.eot
 
 # npm
 node_modules/
 
 # all js files in components
 src/components/**/*.js
+bootstrap/**/*.js
+material/**/*.js
+src/jsonschema.js
+src/uischema.js
+
+# all generated d.ts files
+src/components/**/*.d.ts
+bootstrap/**/*.d.ts
+material/**/*.d.ts
 
 # all js files in tests except the configs
 tests/**/*.js
@@ -44,6 +59,7 @@ examples/js/jsonforms.min.js
 examples/fonts
 examples/assets/jsonforms.css
 examples/assets/jsonforms-bootstrap.css
+examples/assets/jsonforms-material.css
 examples/assets/jsonforms.js
 examples/assets/jsonforms-bootstrap.css
 
