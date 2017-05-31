@@ -78,7 +78,7 @@ export class UISchemaGenerator implements IUISchemaGenerator {
         return UISchemaGenerator.wrapInLayoutIfNecessary(uiSchema, layoutType);
     };
 
-    private generateUISchema(jsonSchema: any, schemaElements: IUISchemaElement[],
+    generateUISchema(jsonSchema: any, schemaElements: IUISchemaElement[],
         currentRef: string, schemaName: string, layoutType: string): IUISchemaElement {
 
         let type = UISchemaGenerator.deriveType(jsonSchema);

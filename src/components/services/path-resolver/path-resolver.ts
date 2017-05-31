@@ -26,7 +26,7 @@ export class RefResolver  {
             let fragments = PathUtil.toPropertyFragments(path);
             return fragments.reduce(function (subSchema, fragment) {
                 const [frag, index] = PathResolver.innerResolveSchemaFragment(fragment);
-                if (index && subSchema.type !== 'array') {
+                if (index && subSchema[frag].type !== 'array') {
                     throw new Error('Can\'t use index reference for non array schema type.');
                 }
 

@@ -74,7 +74,7 @@ describe('MasterDetail', () => {
         let x1 = el[0].querySelector('span.jsf-masterdetail-entry');
         angular.element(x1).triggerHandler('click');
         expect(el.html()).toContain('<label');
-        let nameInput = el[0].querySelector('#\\#\\/properties\\/name');
+        let nameInput = el[0].querySelector('#\\#\\/properties\\/a\\[0\\]\\/properties\\/name');
         expect(nameInput).not.toBeNull();
 
         expect(DataService.getRoot()).toBe(scope.data);
@@ -169,7 +169,7 @@ describe('MasterDetail', () => {
         let x1 = el[0].querySelector('span.jsf-masterdetail-entry');
         angular.element(x1).triggerHandler('click');
         expect(el.html()).toContain('<label');
-        let nameInput = el[0].querySelector('#\\#\\/properties\\/custom');
+        let nameInput = el[0].querySelector('#\\#\\/properties\\/a\\[0\\]\\/properties\\/custom');
         expect(nameInput).not.toBeNull();
 
         expect(DataService.getRoot()).toBe(scope.data);

@@ -1,3 +1,5 @@
+import { IUISchemaElement } from '../../uischema';
+
 export interface ISchemaGenerator {
     generateDefaultSchema(instance: Object): Object;
     generateDefaultSchemaWithOptions(
@@ -8,6 +10,8 @@ export interface ISchemaGenerator {
 
 export interface IUISchemaGenerator {
     generateDefaultUISchema(jsonSchema: any, layoutType?: string): any;
+    generateUISchema(jsonSchema: any, schemaElements: IUISchemaElement[],
+        currentRef: string, schemaName: string, layoutType: string): IUISchemaElement;
 }
 
 

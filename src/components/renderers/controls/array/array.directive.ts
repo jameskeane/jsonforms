@@ -39,10 +39,7 @@ const arrayTemplate = `
                  ng-if="vm.fragment === undefined"
                  class="jsf-control-array-container">
                 <div class="jsf-control-array-element">
-                    <jsonforms schema="vm.arraySchema" 
-                               data="d"
-                               uischema="vm.arrayUiSchema">
-                    </jsonforms>
+                    <jsonforms-inner uischema="vm.getChildUISchema($index)"></jsonforms-inner>
                 </div>
                 <div class="jsf-control-array-element-delete">
                     <input class="btn btn-primary"
@@ -57,10 +54,7 @@ const arrayTemplate = `
                  ng-if="vm.fragment !== undefined" 
                  class="jsf-control-array-container">
                 <div class="jsf-control-array-element">
-                    <jsonforms schema="vm.arraySchema" 
-                               data="d" 
-                               uischema="vm.arrayUiSchema">                               
-                    </jsonforms>
+                    <jsonforms-inner uischema="vm.getChildUISchema($index)"></jsonforms-inner>
                 </div>
                 <div class="jsf-control-array-element-delete">
                     <input class="btn btn-primary"
@@ -96,8 +90,9 @@ class ArrayController extends AbstractControl {
     static $inject = ['$scope', 'UISchemaGenerator'];
     private properties: string[];
     private submitElement = {};
+    private childUISchemaCache = [];
     private arraySchema: any;
-    private arrayUiSchema: IGroup;
+    private uiGenerator: IUISchemaGenerator;
     constructor(scope: ArrayControllerScope, uiGenerator: IUISchemaGenerator) {
         super(scope);
         let resolvedSubSchema = PathResolver.resolveSchema(
@@ -105,7 +100,7 @@ class ArrayController extends AbstractControl {
         let items = resolvedSubSchema.items;
         this.arraySchema = items;
         this.properties = _.keys(items['properties']);
-        this.arrayUiSchema = uiGenerator.generateDefaultUISchema(items, 'HorizontalLayout');
+        this.uiGenerator = uiGenerator;
     }
 
     public get buttonText(){
@@ -133,6 +128,16 @@ class ArrayController extends AbstractControl {
     private supports(keyword: string) {
         let options = this.uiSchema['options'];
         return !(options !== undefined && options[keyword] === false);
+    }
+    private getChildUISchema(index: number): any {
+        if (!this.childUISchemaCache[index]) {
+            this.childUISchemaCache[index] =
+                    this.uiGenerator.generateUISchema(
+                            this.arraySchema, [],
+                            `${this.schemaPath}[${index}]`, '',
+                            'HorizontalLayout');
+        }
+        return this.childUISchemaCache[index];
     }
 
     public get isEmpty(): boolean {
