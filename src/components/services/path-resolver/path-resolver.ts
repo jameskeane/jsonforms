@@ -26,11 +26,11 @@ export class RefResolver  {
             let fragments = PathUtil.toPropertyFragments(path);
             return fragments.reduce(function (subSchema, fragment) {
                 const [frag, index] = PathResolver.innerResolveSchemaFragment(fragment);
-                if (index && subSchema[frag].type !== 'array') {
+                if (index !== null && subSchema[frag].type !== 'array') {
                     throw new Error('Can\'t use index reference for non array schema type.');
                 }
 
-                if (frag === '#' && !index) {
+                if (frag === '#' && index === null) {
                     return subSchema;
                 } else if (index !== null && subSchema[frag].type === 'array') {
                     return subSchema[frag].items;
@@ -102,10 +102,13 @@ export class RefResolver  {
             if (!obj.hasOwnProperty(frag) && createMissing) {
                 if (index !== null) {
                     obj[frag] = [];
-                    if (!isSingleIndexedRef) obj[frag][index] = {};
                 } else {
                     obj[frag] = {};
                 }
+            }
+
+            if (!isSingleIndexedRef && index !== null && !obj[frag][index]) {
+                obj[frag][index] = {};
             }
 
             return [obj[frag], index];
