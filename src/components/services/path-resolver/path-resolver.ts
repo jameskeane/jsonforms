@@ -33,7 +33,17 @@ export class RefResolver  {
                 if (frag === '#' && index === null) {
                     return subSchema;
                 } else if (index !== null && subSchema[frag].type === 'array') {
-                    return subSchema[frag].items;
+                    
+                    if (subSchema[frag].items instanceof Array) {
+                        if (index === null || index >= subSchema[frag].items.length) {
+                            throw new Error('Invalid index referencing: \''
+                                    + path + '\', schema does not define type of item at index.');
+                        } else {
+                            return subSchema[frag].items[index];
+                        }
+                    } else {
+                        return subSchema[frag].items;
+                    }
                 } else if (subSchema instanceof Array) {
                     return subSchema.map(function (item) {
                         return item[frag];
@@ -57,8 +67,7 @@ export class RefResolver  {
 
     resolveToLastModel(instance: any, schemaPath: string): any {
         let fragments: string[] = PathUtil.normalizeFragments(schemaPath);
-        const isSingleIndexedRef =
-                fragments.length === 1 && /\[\d+\]/.test(fragments[0]);
+        const isSingleIndexedRef = /\[\d+\]/.test(fragments[fragments.length - 1]);
         let fragmentsToObject: string[] = isSingleIndexedRef ?
                 fragments : fragments.slice(0, fragments.length - 1);
 
@@ -90,13 +99,14 @@ export class RefResolver  {
             if (obj === undefined) {
                 return undefined;
             }
-            if (obj instanceof Array) {
-                return [obj.map(item => item[frag]), null];
-            }
 
-            if (lastIndex) {
+            if (lastIndex !== null) {
                 obj[lastIndex] = {};
                 obj = obj[lastIndex];
+            }
+
+            if (obj instanceof Array) {
+                return [obj.map(item => item[frag]), null];
             }
 
             if (!obj.hasOwnProperty(frag) && createMissing) {
