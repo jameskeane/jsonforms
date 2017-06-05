@@ -40,6 +40,9 @@ export interface IUISchemaElement extends IWithLabel {
 export interface ILayout extends IUISchemaElement {
     type: string;
     elements: IUISchemaElement[];
+    scope?: {
+        $ref: string;
+    };
 }
 export interface IVerticalLayout extends ILayout { }
 export interface IHorizontalLayout extends ILayout { }

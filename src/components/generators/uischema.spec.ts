@@ -22,7 +22,10 @@ describe('UISchemaGenerator', () => {
         };
         let uiSchema = {
             type: 'VerticalLayout',
-            elements: []
+            elements: [],
+            scope: {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });
@@ -46,7 +49,10 @@ describe('UISchemaGenerator', () => {
                         $ref: '#/properties/name'
                     }
                 }
-            ]
+            ],
+            scope: {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });
@@ -87,7 +93,10 @@ describe('UISchemaGenerator', () => {
                         $ref: '#/properties/age'
                     }
                 }
-            ]
+            ],
+            scope: {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });
@@ -112,7 +121,10 @@ describe('UISchemaGenerator', () => {
                         $ref: '#/properties/name'
                     }
                 }
-            ]
+            ],
+            scope: {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });
@@ -146,7 +158,10 @@ describe('UISchemaGenerator', () => {
                         $ref: '#/properties/name'
                     }
                 }
-            ]
+            ],
+            scope: {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });
@@ -292,7 +307,10 @@ describe('UISchemaGenerator', () => {
                         '$ref': '#/properties/birthDate'
                     }
                 },
-            ]
+            ],
+            'scope': {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });
@@ -321,7 +339,10 @@ describe('UISchemaGenerator', () => {
                         '$ref': '#/properties/comments'
                     }
                 }
-            ]
+            ],
+            'scope': {
+                '$ref': '#'
+            }
         };
         expect(UISchemaGenerator.generateDefaultUISchema(schema)).toEqual(uiSchema);
     });

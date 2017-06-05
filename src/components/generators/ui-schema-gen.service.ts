@@ -11,11 +11,19 @@ export class UISchemaGenerator implements IUISchemaGenerator {
      * @param layoutType The type of the laoyut
      * @returns the new ILayout
      */
-    private static createLayout(layoutType: string): ILayout {
-        return {
+    private static createLayout(layoutType: string, schemaPath?: string): ILayout {
+        let uischema: ILayout = {
             type: layoutType,
             elements: []
         };
+
+        if (schemaPath) {
+            uischema.scope = {
+                '$ref': schemaPath
+            };
+        }
+
+        return uischema;
     }
 
     /**
@@ -85,7 +93,7 @@ export class UISchemaGenerator implements IUISchemaGenerator {
 
         switch (type) {
             case 'object':
-                let layout: ILayout = UISchemaGenerator.createLayout(layoutType);
+                let layout: ILayout = UISchemaGenerator.createLayout(layoutType, currentRef);
                 schemaElements.push(layout);
 
                 this.addLabel(layout, schemaName);
