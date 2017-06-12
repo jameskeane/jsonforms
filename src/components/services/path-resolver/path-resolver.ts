@@ -101,7 +101,7 @@ export class RefResolver  {
             }
 
             if (lastIndex !== null) {
-                obj[lastIndex] = {};
+                obj[lastIndex] = obj[lastIndex] || {};
                 obj = obj[lastIndex];
             }
 
