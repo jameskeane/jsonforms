@@ -1,4 +1,4 @@
-
+import 'lodash';
 import {PathUtil} from '../pathutil';
 
 export class RefResolver  {
@@ -24,37 +24,92 @@ export class RefResolver  {
     resolveSchema(schema: any, path: string): any {
         try {
             let fragments = PathUtil.toPropertyFragments(path);
-            return fragments.reduce(function (subSchema, fragment) {
-                const [frag, index] = PathResolver.innerResolveSchemaFragment(fragment);
-                if (index !== null && subSchema[frag].type !== 'array') {
-                    throw new Error('Can\'t use index reference for non array schema type.');
-                }
+            let validSubSchemas = fragments.reduce(function (subSchemas, fragment) {
+                return subSchemas.reduce((prev, subSchema) => {
+                    let combined = PathResolver.combineSchema(subSchema);
 
-                if (frag === '#' && index === null) {
-                    return subSchema;
-                } else if (index !== null && subSchema[frag].type === 'array') {
-                    
-                    if (subSchema[frag].items instanceof Array) {
-                        if (index === null || index >= subSchema[frag].items.length) {
-                            throw new Error('Invalid index referencing: \''
-                                    + path + '\', schema does not define type of item at index.');
-                        } else {
-                            return subSchema[frag].items[index];
-                        }
-                    } else {
-                        return subSchema[frag].items;
+                    let anyIndexMatch = fragment.match(/^@(\d+)$/);
+                    if (anyIndexMatch) {
+                        let anyIndex = parseInt(anyIndexMatch[1], 10);
+                        return prev.concat([combined[anyIndex]]);
                     }
-                } else if (subSchema instanceof Array) {
-                    return subSchema.map(function (item) {
-                        return item[frag];
-                    });
-                }
-                return subSchema[frag];
-            }, schema);
+
+                    return prev.concat(combined.reduce((prev, subCombined) => {
+                        let inner = PathResolver.innerResolveSchema(subCombined, fragment);
+                        if (inner) prev.push(inner);
+                        return prev;
+                    }, []));
+                }, []);
+
+            }, [schema]);
+
+            if (validSubSchemas.length === 1) {
+                return validSubSchemas[0];
+            } else {
+                // ambigous
+                debugger;
+            }
         } catch (err) {
             return undefined;
         }
-    };
+    }
+
+    private innerResolveSchema(schema: any, fragment: any) {
+        try {
+            const [frag, index] = PathResolver.innerResolveSchemaFragment(fragment);
+
+            if (index !== null && schema[frag].type !== 'array') {
+                throw new Error('Can\'t use index reference for non array schema type.');
+            }
+
+            if (frag === '#' && index === null) {
+                return schema;
+            } else if (index !== null && schema[frag].type === 'array') {
+                
+                if (schema[frag].items instanceof Array) {
+                    if (index === null || index >= schema[frag].items.length) {
+                        throw new Error('Invalid index referencing: schema does not define type of item at index.');
+                    } else {
+                        return schema[frag].items[index];
+                    }
+                } else {
+                    return schema[frag].items;
+                }
+            } else if (schema instanceof Array) {
+                return schema.map(function (item) {
+                    return item[frag];
+                });
+            }
+            return schema[frag];
+        } catch (err) {
+            return undefined;
+        }
+    }
+
+    combineSchema(schema: any) {
+        if (!schema.allOf && !schema.anyOf) return [schema];
+
+        // TODO `additionalProperties`
+        let res = _.cloneDeep(schema);
+
+        if ('allOf' in res) {
+            delete res.allOf;
+            _.merge.apply(_, [res].concat(schema.allOf));
+        }
+
+        if ('anyOf' in res) {
+            delete res.anyOf;
+            return Array.prototype.concat.apply([], schema.anyOf.map((sub) =>
+                PathResolver.combineSchema(
+                        _.merge(_.cloneDeep(res), sub))));
+        }
+
+        if ('oneOf' in res) {
+            // TODO
+        }
+
+        return PathResolver.combineSchema(res);
+    }
 
     lastFragment(schemaPath: string): string {
         let fragments: string[] = PathUtil.normalizeFragments(schemaPath);

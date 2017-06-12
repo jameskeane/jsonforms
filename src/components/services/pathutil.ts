@@ -90,7 +90,8 @@ export class PathUtil {
      * @returns {string[]} a path without schema specific fragments
      */
     static filterNonKeywords(fragments: string[]): string[] {
-        return fragments.filter(fragment => !_.includes(PathUtil.Keywords, fragment));
+        return fragments.filter(fragment => !_.includes(PathUtil.Keywords, fragment))
+                        .filter(fragment => !/^@\d+$/.test(fragment));
     }
 
     /**
