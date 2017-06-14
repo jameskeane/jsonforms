@@ -47,7 +47,7 @@ export class RefResolver  {
                 return validSubSchemas[0];
             } else {
                 // ambigous
-                debugger;
+                throw new Error('Unable to resolve schema \'' + path + '\', schema is ambigous.');
             }
         } catch (err) {
             return undefined;
